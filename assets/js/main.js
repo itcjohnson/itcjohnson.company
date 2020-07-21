@@ -1,9 +1,10 @@
 let jeans = 0;
-let clothesList = ["shirt", "jeans"];
-let cloth = clothesList[jeans];
+let clothesList = [];
+let cloth = "";
 let page = 1;
-let total = [22, 26];
-let totalpages = [0, 0];
+let total_elements = 0;
+let total = [];
+let totalpages = [];
 const N = 6;
 let titles = [];
 
@@ -80,6 +81,32 @@ function addOnClickAll() {
 	}
 }
 
+function addCatalogSection() {
+	$("#catalog-header").empty();
+	list_elements = "";
+	for (let i = 0; i < total_elements; i++) {
+		name = clothesList[i];
+		arr = name.split(" ");
+		arr2 = [];
+		for (el of arr) {
+			el1 = el;
+			if (el1.length >= 1) {
+				el1 = el.charAt(0).toUpperCase() + el.slice(1);
+			}
+			arr2.push(el1);
+		}
+		name = arr2.join(" ");
+		list_elements += `<li class="nav-item m-4" id="` + (i) + `">
+	      <a class="nav-link cursor">` + name + `</a>
+	    </li>`;
+	}
+	$("#catalog-header").append(`
+	<ul class="navbar-nav ml-auto">
+		` + list_elements + `
+	</ul>
+`);
+}
+
 function addActiveMain(){
 	$("#" + jeans).addClass("active");
 	$("#" + jeans).addClass("head-3");
@@ -101,8 +128,11 @@ function addOnClickMain(i) {
 		removeOnClickMain(i);
 		stateChange(i, 1);
 		addActiveMain();
-		addOnClickMain(1 - i);
-
+		for (let index = 0; index < total_elements; index++) {
+			if (index != i) {
+				addOnClickMain(index);
+			}
+		}
 		addPageNumbers();
 		addActive();
 		addOnClickAll();
@@ -114,15 +144,20 @@ function addOnClickMain(i) {
 $("#modal-close").click(function(){
 	$("#modal").hide();
 });
-
 $.getJSON("assets/js/data.json", function(data) {
-	titles = data;
-	total[0] = titles[0].length - 1;
-	total[1] = titles[1].length - 1;
-	totalpages[0] = Math.floor((total[0] + N - 1) / N);
-	totalpages[1] = Math.floor((total[1] + N - 1) / N);
+	console.log(data);
+	data = data["data"];
+	total_elements = data.length;
+	for (element of data) {
+		clothesList.push(element["head"]);
+		titles.push(element["titles"]);
+		total.push(element["titles"].length - 1);
+		totalpages.push(Math.floor(((element["titles"].length - 1) + N - 1) / N));
+	}
+	cloth = clothesList[jeans];
 	console.log(total);
 	console.log(totalpages);
+	addCatalogSection();
 	addPageNumbers();
 	addActive();
 	addOnClickAll();
@@ -130,5 +165,9 @@ $.getJSON("assets/js/data.json", function(data) {
 	addElements();
 
 	addActiveMain();
-	addOnClickMain(1 - jeans);
+	for (let index = 0; index < total_elements; index++) {
+		if (index != jeans) {
+			addOnClickMain(index);
+		}
+	}
 });
